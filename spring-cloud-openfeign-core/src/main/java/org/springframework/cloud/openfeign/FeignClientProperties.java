@@ -40,6 +40,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Ram Anaswara
  * @author Jonatan Ivanov
  * @author Olga Maciaszek-Sharma
+ *  配置文件
+ *
  */
 @ConfigurationProperties("feign.client")
 public class FeignClientProperties {

@@ -118,8 +118,10 @@ public class FeignClientFactoryBean
 
 	protected Feign.Builder feign(FeignContext context) {
 		FeignLoggerFactory loggerFactory = get(context, FeignLoggerFactory.class);
+        //日志
 		Logger logger = loggerFactory.create(type);
 
+        //我们可以定制 Logger、Encoder、Decoder、Contract
 		// @formatter:off
 		Feign.Builder builder = get(context, Feign.Builder.class)
 				// required values
@@ -128,8 +130,9 @@ public class FeignClientFactoryBean
 				.decoder(get(context, Decoder.class))
 				.contract(get(context, Contract.class));
 		// @formatter:on
-
+       // 设置属性
 		configureFeign(context, builder);
+        //自定义属性
 		applyBuildCustomizers(context, builder);
 
 		return builder;
@@ -147,6 +150,8 @@ public class FeignClientFactoryBean
 	}
 
 	protected void configureFeign(FeignContext context, Feign.Builder builder) {
+
+        //配置文件中的 feign.client.* 客户端配置
 		FeignClientProperties properties = beanFactory != null ? beanFactory.getBean(FeignClientProperties.class)
 				: applicationContext.getBean(FeignClientProperties.class);
 
@@ -376,11 +381,20 @@ public class FeignClientFactoryBean
 	 * @return a {@link Feign} client created with the specified data and the context
 	 * information
 	 */
+    /**
+     * 实际工作方法
+     * @param <T>
+     * @return
+     */
 	<T> T getTarget() {
-		FeignContext context = beanFactory != null ? beanFactory.getBean(FeignContext.class)
+
+             // Feign 上下文
+        FeignContext context = beanFactory != null ? beanFactory.getBean(FeignContext.class)
 				: applicationContext.getBean(FeignContext.class);
+        //Feign 构造器
 		Feign.Builder builder = feign(context);
 
+        // 如果没有直接配置 url，就走负载均衡请求
 		if (!StringUtils.hasText(url)) {
 			if (url != null && LOG.isWarnEnabled()) {
 				LOG.warn("The provided URL is empty. Will try picking an instance via load-balancing.");
@@ -394,20 +408,26 @@ public class FeignClientFactoryBean
 			else {
 				url = name;
 			}
+            //带服务名的地址 => http://demo-consumer
 			url += cleanPath();
+            // 返回的类型肯定是具备负载均衡能力的；HardCodedTarget => 硬编码的 Target
 			return (T) loadBalance(builder, context, new HardCodedTarget<>(type, name, url));
 		}
+        // 如果配置了 url，就直接请求 url 地址
 		if (StringUtils.hasText(url) && !url.startsWith("http")) {
 			url = "http://" + url;
 		}
 		String url = this.url + cleanPath();
+        // Client => Feign 发起 HTTP 调用的核心组件
 		Client client = getOptional(context, Client.class);
 		if (client != null) {
+            // 得到的是代理对象，就是原生的 Client.Default
 			if (client instanceof FeignBlockingLoadBalancerClient) {
 				// not load balancing because we have a url,
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
 				client = ((FeignBlockingLoadBalancerClient) client).getDelegate();
 			}
+            //// 得到的是代理对象，就是原生的 Client.Default
 			if (client instanceof RetryableFeignBlockingLoadBalancerClient) {
 				// not load balancing because we have a url,
 				// but Spring Cloud LoadBalancer is on the classpath, so unwrap
@@ -415,7 +435,8 @@ public class FeignClientFactoryBean
 			}
 			builder.client(client);
 		}
-		Targeter targeter = get(context, Targeter.class);
+        // targeter 创建动态代理对象
+        Targeter targeter = get(context, Targeter.class);
 		return (T) targeter.target(this, builder, context, new HardCodedTarget<>(type, name, url));
 	}
 

@@ -17,10 +17,18 @@
 package org.springframework.cloud.openfeign;
 
 import feign.Feign;
+import feign.FeignException;
+import feign.Response;
 import feign.Target;
 
+import feign.codec.DecodeException;
+import feign.codec.Decoder;
+import org.springframework.boot.json.GsonJsonParser;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
 
 @SuppressWarnings("unchecked")
 class FeignCircuitBreakerTargeter implements Targeter {
@@ -87,5 +95,7 @@ class FeignCircuitBreakerTargeter implements Targeter {
 		return builder.circuitBreakerFactory(circuitBreakerFactory).feignClientName(feignClientName)
 				.circuitBreakerGroupEnabled(circuitBreakerGroupEnabled);
 	}
+
+
 
 }

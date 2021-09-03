@@ -70,6 +70,9 @@ import static feign.form.ContentType.MULTIPART;
  * @author Jonatan Ivanov
  * @author Olga Maciaszek-Sharma
  * @author Hyeonmin Park
+ *
+ * 默认配置信息
+ *
  */
 @Configuration(proxyBeanMethods = false)
 public class FeignClientsConfiguration {
